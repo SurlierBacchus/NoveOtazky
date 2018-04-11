@@ -1,9 +1,13 @@
 import com.tilgnerka.draw.DrawHelper;
 
 import javax.swing.*;
+import javax.swing.text.EditorKit;
 import javax.swing.text.StyledEditorKit;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 
 public class O10 {
 
@@ -13,8 +17,10 @@ public class O10 {
     private JPanel mainPanel;
     private JEditorPane text;
 
-    private boolean isItalic = false;
-    private boolean isBold = false;
+    private int textState = 0;
+    private static final int PLAIN = 0;
+    private static final int ITALIC = 1;
+    private static final int BOLD = 2;
 
     public static void main(String[] args) {
         new O10();
@@ -22,39 +28,51 @@ public class O10 {
 
     private O10(){
         DrawHelper.initializeDefaultFrame(mainPanel);
-        text.setContentType("text/html");
-        text.setText("<p>");
 
         italic.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (isItalic){
-                    text.setText(text.getText() + "</i>");
+                if (textState == ITALIC){
+                    text.setFont(text.getFont().deriveFont(Font.PLAIN));
+                    textState = PLAIN;
                 } else {
-                    text.setText(text.getText() + "<i>");
+                    text.setFont(text.getFont().deriveFont(Font.ITALIC));
+                    textState = ITALIC;
                 }
-
-                isItalic = !isItalic;
             }
         });
 
         bold.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (isBold){
-                    text.setText(text.getText() + "</b>");
-                } else {
-                    text.setText(text.getText() + "<b>");
+                if (textState == BOLD){
+                    text.setFont(text.getFont().deriveFont(Font.PLAIN));
+                    textState = PLAIN;
                 }
-
-                isBold = !isBold;
+                else {
+                    text.setFont(text.getFont().deriveFont(Font.BOLD));
+                    textState = BOLD;
+                }
             }
         });
 
         save.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                try {
+                    PrintWriter printWriter = new PrintWriter("maturita/10/vystup.txt");
+                    String out = "";
 
+                    if (textState == PLAIN) out = text.getText();
+                    else if (textState == ITALIC) out = "<i>" + text.getText() + "</i>";
+                    else if (textState == BOLD) out = "<b>" + text.getText() + "</b>";
+
+                    printWriter.print(out);
+                    printWriter.close();
+
+                } catch (FileNotFoundException e1) {
+                    e1.printStackTrace();
+                }
             }
         });
     }
