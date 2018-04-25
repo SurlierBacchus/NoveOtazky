@@ -6,6 +6,9 @@ import java.awt.event.ActionListener;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -38,63 +41,33 @@ public class O25 {
             public void actionPerformed(ActionEvent e) {
                 String datum = datumVstup.getText();
                 String cas = casVstup.getText();
-                Date teraz = new Date();
 
-                try {
-                    Date narodenie = dateFormat.parse(datum + " " + cas);
-                    System.out.println(dateFormat.format(narodenie));
-
-                    int rokH = teraz.getYear() - narodenie.getYear();
-
-                    int mesiacH = teraz.getMonth() - narodenie.getMonth();
-                    if (mesiacH < 0){
-                        rokH--;
-                        mesiacH = 12 + mesiacH;
-                    }
-
-                    int denH = teraz.getDate() - narodenie.getDate();
-                    if (denH < 0){
-                        mesiacH--;
-                        denH = 30 + denH;
-                    }
-                    int tyzdenH = denH / 7;
-                    denH %= 7;
-
-                    int hodH = teraz.getHours() - narodenie.getHours();
-                    if (hodH < 0){
-                        denH--;
-                        hodH = 24 + hodH;
-                    }
-
-                    int minH = teraz.getMinutes() - narodenie.getMinutes();
-                    if (minH < 0){
-                        hodH--;
-                        minH = 60 + minH;
-                    }
-
-                    int sekH = teraz.getSeconds() - narodenie.getSeconds();
-                    if (sekH < 0){
-                        minH--;
-                        sekH = 60 + sekH;
-                    }
-
-                    if (rokH < 0){
-                        JOptionPane.showMessageDialog(frame, "Vstup je neskor ako teraz");
-                    }
-
-                    rok.setText(String.valueOf(rokH));
-                    mesiac.setText(String.valueOf(mesiacH));
-                    tyzden.setText(String.valueOf(tyzdenH));
-                    den.setText(String.valueOf(denH));
-                    hodina.setText(String.valueOf(hodH));
-                    minuta.setText(String.valueOf(minH));
-                    sekunda.setText(String.valueOf(sekH));
-
-                } catch (ParseException e1) {
-                    e1.printStackTrace();
-                    JOptionPane.showMessageDialog(frame, "Nespravny format vstupu");
+                LocalDateTime teraz = LocalDateTime.now();
+                LocalDateTime narodenie;
+                try{
+                    narodenie = LocalDateTime.parse(datum + " " + cas, DateTimeFormatter.ofPattern("d.M.yyyy H:m:s"));
+                } catch (DateTimeParseException ex){
+                    JOptionPane.showMessageDialog(frame, "Nespravny vstup");
+                    return;
                 }
+                LocalDateTime rozdiel;
 
+                rozdiel = teraz.minusYears(narodenie.getYear());
+                rozdiel = rozdiel.minusMonths(narodenie.getMonthValue());
+                rozdiel = rozdiel.minusDays(narodenie.getDayOfMonth());
+                rozdiel = rozdiel.minusHours(narodenie.getHour());
+                rozdiel = rozdiel.minusMinutes(narodenie.getMinute());
+                rozdiel = rozdiel.minusSeconds(narodenie.getSecond());
+
+                rok.setText(String.valueOf(rozdiel.getYear()));
+                mesiac.setText(String.valueOf(rozdiel.getMonthValue()));
+                int tyzdenH = rozdiel.getDayOfMonth() / 7;
+                int denH = rozdiel.getDayOfMonth() % 7;
+                tyzden.setText(String.valueOf(tyzdenH));
+                den.setText(String.valueOf(denH));
+                hodina.setText(String.valueOf(rozdiel.getHour()));
+                minuta.setText(String.valueOf(rozdiel.getMinute()));
+                sekunda.setText(String.valueOf(rozdiel.getSecond()));
             }
         });
 
@@ -102,12 +75,13 @@ public class O25 {
             @Override
             public void run() {
                 while (true){
-                    cas.setText(dateFormat.format(new Date()));
+                    cas.setText(LocalDateTime.now().format(DateTimeFormatter.ofPattern("d.M.yyyy HH:mm:ss")));
 
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
+                        break;
                     }
                 }
             }
