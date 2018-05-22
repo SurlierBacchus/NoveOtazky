@@ -47,17 +47,12 @@ public class O22 {
         drawHelper.getRenderablePanel().addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                int x = e.getX();
-                int y = e.getY();
+                if (oval.contains(e.getX(), e.getY())) {
+                    oval.setX((int) (Math.random() * 500));
+                    oval.setY(0);
 
-                if (x - oval.getX() < VELKOST && x - oval.getX() > 0){
-                    if (y - oval.getY() < VELKOST && y - oval.getY() > 0){
-                        oval.setX((int) (Math.random() * 500));
-                        oval.setY(0);
-
-                        body++;
-                        bodyLabel.setText(String.valueOf(body));
-                    }
+                    body++;
+                    bodyLabel.setText(String.valueOf(body));
                 }
             }
         });
